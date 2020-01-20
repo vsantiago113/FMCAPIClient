@@ -28,7 +28,7 @@ class Client:
         self.token_refresh_count = 0
 
     def connect(self, server=str(), username=str(), password=str()):
-        self.server = server
+        self.server = server.replace('https://', '').replace('http://', '').strip('/')
         url = ('https://{}/api/fmc_platform/v1/auth/generatetoken'.format(server))
         _response = requests.post(url, headers=self.headers, auth=HTTPBasicAuth(username, password), verify=self.verify)
 

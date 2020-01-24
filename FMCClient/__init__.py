@@ -93,9 +93,25 @@ class Client:
         else:
             raise FMCError(response.status_code)
 
+    def add(self, method: str, data: dict) -> dict:
+        response = requests.post('{}/{}'.format(self.base_url.strip('/'), method), headers=self.headers,
+                                 verify=self.verify, json=data)
+        if response.status_code in [200]:
+            return response.json()
+        else:
+            raise FMCError(response.status_code)
+
     def update(self, method: str, data: dict) -> dict:
         response = requests.put('{}/{}'.format(self.base_url.strip('/'), method), headers=self.headers,
                                 verify=self.verify, json=data)
+        if response.status_code in [200]:
+            return response.json()
+        else:
+            raise FMCError(response.status_code)
+
+    def delete(self, method: str) -> dict:
+        response = requests.delete('{}/{}'.format(self.base_url.strip('/'), method), headers=self.headers,
+                                   verify=self.verify)
         if response.status_code in [200]:
             return response.json()
         else:

@@ -75,7 +75,7 @@ client.close()
 ```
 
 #### Response Data
-Response Status Code200
+Response Status Code 200
 ```json
 {
   "id": "device_uuid",
@@ -126,7 +126,7 @@ client.close()
 ```
 
 #### Request Data
-Response Status Code200
+Response Status Code 200
 ```json
 {
   "name": "newDevice",
@@ -200,7 +200,7 @@ client.close()
 ```
 
 #### Request Data
-Response Status Code202
+Response Status Code 200
 ```json
 {
   "name": "<name>",
@@ -239,7 +239,7 @@ client.close()
 ```
 
 #### Response Data
-Response Status Code200
+Response Status Code 200
 ```json
 {
   "id": "device_uuid",

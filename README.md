@@ -55,7 +55,7 @@ import FMCClient
 client = FMCClient.Client()
 client.connect(server='myfmc.local', username='myusername', password='mypassword')
 
-response = client.get(method='devices/devicerecords', limist=1000, offset=0, expanded=True)
+response = client.get(method='devices/devicerecords', limit=1000, offset=0, expanded=True)
 for device in response['items']:
     print(f'Hostname: {device["name"]}')
     print(f'IP Address: {device["hostName"]}')

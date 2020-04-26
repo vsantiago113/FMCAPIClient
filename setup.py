@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='FMCClient',
-      version='0.0.1',
+      version='0.0.2',
       description='An API wrapper to work with Cisco Firepower Management Center (FMC)',
       author='Victor M Santiago',
       author_email='vsantiago113sec@gmail.com',

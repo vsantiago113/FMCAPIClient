@@ -26,9 +26,13 @@ class Client:
         self.base_url = None
         self.token_expire = datetime.now()
         self.token_refresh_count = 0
+        self.username = None
+        self.password = None
 
     def connect(self, server=str(), username=str(), password=str()):
         self.server = server.replace('https://', '').replace('http://', '').strip('/')
+        self.username = username
+        self.password = password
         url = ('https://{}/api/fmc_platform/v1/auth/generatetoken'.format(server))
         _response = requests.post(url, headers=self.headers, auth=HTTPBasicAuth(username, password), verify=self.verify)
 
@@ -50,7 +54,7 @@ class Client:
 
     def validate_token(self):
         if self.token_refresh_count >= 3:
-            raise FMCAuthError('Token cannot be refresh! New token is required.')
+            self.connect(self.server, self.username, self.password)
         elif self.token_expire <= datetime.now():
             self.refresh_token_func()
         else:
@@ -86,6 +90,7 @@ class Client:
         return __response.status_code
 
     def get(self, method=str(), **kwargs):
+        self.validate_token()
         response = requests.get('{}/{}'.format(self.base_url.strip('/'), method), headers=self.headers,
                                 verify=self.verify, params=kwargs)
         if response.status_code in [200]:
@@ -94,6 +99,7 @@ class Client:
             raise FMCError(response.status_code)
 
     def add(self, method: str, data: dict) -> dict:
+        self.validate_token()
         response = requests.post('{}/{}'.format(self.base_url.strip('/'), method), headers=self.headers,
                                  verify=self.verify, json=data)
         if response.status_code in [200]:
@@ -102,6 +108,7 @@ class Client:
             raise FMCError(response.status_code)
 
     def update(self, method: str, data: dict) -> dict:
+        self.validate_token()
         response = requests.put('{}/{}'.format(self.base_url.strip('/'), method), headers=self.headers,
                                 verify=self.verify, json=data)
         if response.status_code in [200]:
@@ -110,6 +117,7 @@ class Client:
             raise FMCError(response.status_code)
 
     def delete(self, method: str) -> dict:
+        self.validate_token()
         response = requests.delete('{}/{}'.format(self.base_url.strip('/'), method), headers=self.headers,
                                    verify=self.verify)
         if response.status_code in [200]:

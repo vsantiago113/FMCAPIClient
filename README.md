@@ -1,253 +1,171 @@
-# FMCClient
-
-## Cisco Firepower Management Center (FMC) API Wrapper
-
-### Description
-This is a wrapper to make it easier to use the API to interact with the FMC to get, update, delete and create records.
+# FMCAPIClient
+[Firepower REST API Guides](https://www.cisco.com/c/en/us/support/security/defense-center/products-programming-reference-guides-list.html 'Firepower REST API Guides')<br />
 
 ---
 
-### Class Usage
+![PyPI - Status](https://img.shields.io/pypi/status/FMCAPIClient)
+![PyPI - Format](https://img.shields.io/pypi/format/FMCAPIClient)
+![GitHub](https://img.shields.io/github/license/vsantiago113/FMCAPIClient)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/vsantiago113/FMCAPIClient)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/FMCAPIClient)
 
-#### Class.get(method='')
-The class method is the a url part for example: devices/devicerecords/device_uuid
+An API Client for the Cisco Firepower Management Center to be able to easily use the API in a more standard way.
 
-On the FMC the example url you will see is the full url part like this example: /api/fmc_config/v1/domain/DomainUUID/devices/devicerecords/device_uuid
+## How to install
+```ignorelang
+$ pip install FMCAPIClient
+```
 
-You do not need this part: /api/fmc_config/v1/domain/DomainUUID
-That part is adding automatically by the Class.
+## Usage
+The argument 'method' must be specify every time.
 
-Check the examples for get, put, post and delete.
+Note: The class will validate the token, and refresh the token when needed as this validation method is called in between each method call.
 
----
+NOTE:
 
-#### Class.get(method='', limit=1000, offset=0, expanded=True)
-The parameters limit, offset, expanded any other parameter required for the API call need to pass it as a kwarg.
-
-#### Import and create connection
-Import the package FMCClient then create an instance of the class Client and use the class instance to create a connection. To close the connection use the close method.
+#### Default arguments and attributes
 ```python
-import FMCClient
+import FMCAPIClient
 
-client = FMCClient.Client()
-client.connect(server='myfmc.local', username='myusername', password='mypassword')
+client = FMCAPIClient.Client(verify=False, warnings=False, api_version='v1')
 
-client.close()
+client.get(url=None, method='', data=None, auth = None)
+
+# client.headers
+# client.base_url
+# client.token
+# client.auth
+# client.token_expire
+# client.token_refresh
+# client.token_refresh_count
+# client.domain_uuid
+# client.server
+
 ```
 
----
-
-### To get records - Class.get(method='', **kwargs)
-Import the package FMCClient then create an instance of the class Client and use the class instance to create a connection. To close the connection use the close method.
-
-#### Method
-```text
-devices/devicerecords
-```
-
-```text
-devices/devicerecords/device_uuid
-```
-
+#### Authentication
 ```python
-import FMCClient
+import FMCAPIClient
 
-client = FMCClient.Client()
-client.connect(server='myfmc.local', username='myusername', password='mypassword')
+client = FMCAPIClient.Client()
+client.connect(url='https://FMC-server.local', username='admin', password='Admin123')
 
-response = client.get(method='devices/devicerecords', limit=1000, offset=0, expanded=True)
-for device in response['items']:
-    print(f'Hostname: {device["name"]}')
-    print(f'IP Address: {device["hostName"]}')
-client.close()
+client.disconnect()
 ```
 
+#### Refresh Token
 ```python
-import FMCClient
+import FMCAPIClient
 
-client = FMCClient.Client()
-client.connect(server='myfmc.local', username='myusername', password='mypassword')
+client = FMCAPIClient.Client()
+client.connect(url='https://FMC-server.local', username='admin', password='Admin123')
 
-device = client.get(method='devices/devicerecords/device_uuid')
-print(f'Hostname: {device["name"]}')
-print(f'IP Address: {device["hostName"]}')
-client.close()
+client.refresh_token_func()
+
+client.disconnect()
 ```
 
-#### Response Data
-Response Status Code 200
-```json
-{
-  "id": "device_uuid",
-  "hostName": "<host name>",
-  "name": "nachos",
-  "type": "Device",
-  "license_caps": [
-    "PROTECT",
-    "MALWARE"
-  ]
-}
-```
----
-
-### Update records - Class.update(method='', **kwargs)
-To update a record you need to pass a json object with all the required data, check out the example below:
-#### Method
-```text
-devices/devicerecords/device_uuid
-```
-
-#### Data
-```json
-{
-  "id": "device_uuid",
-  "name": "nachos_updated",
-  "type": "Device",
-  "hostName": "10.20.30.40",
-  "prohibitPacketTransfer": true
-}
-```
+#### The first query
 ```python
-import FMCClient
+import FMCAPIClient
+import json
 
-client = FMCClient.Client()
-client.connect(server='myfmc.local', username='myusername', password='mypassword')
-data = {
-  "id": "device_uuid",
-  "name": "nachos_updated",
-  "type": "Device",
-  "hostName": "10.20.30.40",
-  "prohibitPacketTransfer": True
-}
+client = FMCAPIClient.Client()
+client.connect(url='https://FMC-server.local', username='admin', password='Admin123')
 
-response = client.update(method='devices/devicerecords/device_uuid', data=data)
+response = client.get(method='/devicegroups/devicegrouprecords')
+print(json.dumps(response.json(), indent=4))
 
-client.close()
+client.disconnect()
 ```
 
-#### Request Data
-Response Status Code 200
-```json
-{
-  "name": "newDevice",
-  "regKey": "test",
-  "hostName": "10.1.1.10",
-  "type": "Device",
-  "license_caps": [
-    "PROTECT",
-    "MALWARE"
-  ]
-}
-```
-
----
-
-### Create records - Class.add(method='', **kwargs)
-To create a record you need to pass a json object with all the required data, check out the example below:
-#### Method
-```text
-devices/devicerecords
-```
-
-#### Data
-```json
-{
-  "name": "<name>",
-  "hostName": "<host name>",
-  "natID": "cisco123",
-  "regKey": "regkey",
-  "type": "Device",
-  "license_caps": [
-    "MALWARE",
-    "URLFilter",
-    "PROTECT",
-    "CONTROL",
-    "VPN"
-  ],
-  "accessPolicy": {
-    "id": "accessPolicyUUID",
-    "type": "AccessPolicy"
-  }
-}
-```
+#### Getting detailed information
 ```python
-import FMCClient
+import FMCAPIClient
+import json
 
-client = FMCClient.Client()
-client.connect(server='myfmc.local', username='myusername', password='mypassword')
-data = {
-  "name": "<name>",
-  "hostName": "<host name>",
-  "natID": "cisco123",
-  "regKey": "regkey",
-  "type": "Device",
-  "license_caps": [
-    "MALWARE",
-    "URLFilter",
-    "PROTECT",
-    "CONTROL",
-    "VPN"
-  ],
-  "accessPolicy": {
-    "id": "accessPolicyUUID",
-    "type": "AccessPolicy"
-  }
-}
+client = FMCAPIClient.Client()
+client.connect(url='https://FMC-server.local', username='admin', password='Admin123')
 
-response = client.add(method='devices/devicerecords', data=data)
+response = client.get(method=f'/devicegroups/devicegrouprecords', expanded=True)
+print(json.dumps(response.json(), indent=4))
 
-client.close()
+client.disconnect()
 ```
 
-#### Request Data
-Response Status Code 200
-```json
-{
-  "name": "<name>",
-  "hostName": "<host name>",
-  "natID": "cisco123",
-  "regKey": "regkey",
-  "type": "Device",
-  "license_caps": [
-    "BASE",
-    "MALWARE",
-    "URLFilter",
-    "THREAT"
-  ],
-  "accessPolicy": {
-    "id": "accessPolicyUUID",
-    "type": "AccessPolicy"
-  }
-}
-```
-
----
-
-### To delete records - Class.delete(method='', **kwargs)
-To delete the record you only need to pass the device or object id on the method.
-
+#### Filtering
 ```python
-import FMCClient
+import FMCAPIClient
+import json
 
-client = FMCClient.Client()
-client.connect(server='myfmc.local', username='myusername', password='mypassword')
+client = FMCAPIClient.Client()
+client.connect(url='https://FMC-server.local', username='admin', password='Admin123')
 
-response = client.delete(method='devices/devicerecords/device_uuid')
-print(response)
+group_id = '81fe2042-9ad2-11ea-be78-cde812596ba2'
+response = client.get(method=f'/devicegroups/devicegrouprecords/{group_id}')
+print(json.dumps(response.json(), indent=4))
 
-client.close()
+client.disconnect()
 ```
 
-#### Response Data
-Response Status Code 200
-```json
-{
-  "id": "device_uuid",
-  "name": "nachos_updated",
-  "type": "Device",
-  "license_caps": [
-    "PROTECT",
-    "MALWARE"
-  ]
-}
+#### Paging
+```python
+import FMCAPIClient
+import json
+
+client = FMCAPIClient.Client()
+client.connect(url='https://FMC-server.local', username='admin', password='Admin123')
+
+
+response = client.get(method=f'/devicegroups/devicegrouprecords', offset=0, limit=1)
+print(json.dumps(response.json(), indent=4))
+
+client.disconnect()
+```
+
+#### Creating
+```python
+import FMCAPIClient
+import json
+
+client = FMCAPIClient.Client()
+client.connect(url='https://FMC-server.local', username='admin', password='Admin123')
+
+response = client.post(method='/devicegroups/devicegrouprecords', data={'name': 'test_group',
+                                                                        'type': 'DeviceGroup'})
+print(json.dumps(response.json(), indent=4))
+
+client.disconnect()
+```
+
+#### Updating
+```python
+import FMCAPIClient
+import json
+
+client = FMCAPIClient.Client()
+client.connect(url='https://FMC-server.local', username='admin', password='Admin123')
+
+group_id = '1234567890abc'
+response = client.put(method=f'/devicegroups/devicegrouprecords/{group_id}', data={'id': group_id,
+                                                                                   'name': 'test_group_updated',
+                                                                                   'type': 'DeviceGroup'})
+print(json.dumps(response.json(), indent=4))
+
+client.disconnect()
+```
+
+#### Deleting
+```python
+import FMCAPIClient
+import json
+
+client = FMCAPIClient.Client()
+client.connect(url='https://FMC-server.local', username='admin', password='Admin123')
+
+group_id = '1234567890abc'
+response = client.delete(method=f'/devicegroups/devicegrouprecords/{group_id}')
+print(json.dumps(response.json(), indent=4))
+
+client.disconnect()
 ```

@@ -11,11 +11,12 @@ class Client(APIPlugin):
     base_url = None
     token = None
     auth = None
-    token_expire = None
+    token_expire = datetime.now()
     token_refresh = None
     token_refresh_count = 0
     domain_uuid = None
     server = None
+    token_expiration_period = 29
 
     def connect(self, url: [str, bytes] = '', username: [str, bytes] = '', password: [str, bytes] = ''):
         self.server = url.strip("/")
@@ -27,7 +28,9 @@ class Client(APIPlugin):
             self.token = response.headers.get('X-auth-access-token')
             self.token_refresh = response.headers.get('X-auth-refresh-token')
             self.token_refresh_count = 0
-            self.token_expire = datetime.now() + timedelta(minutes=30)
+            if self.token_expiration_period > 30 or self.token_expiration_period < 1:
+                self.token_expiration_period = 30
+            self.token_expire = datetime.now() + timedelta(minutes=self.token_expiration_period)
             self.headers.update({'X-auth-access-token': self.token})
 
         self.base_url = f'{self.server}/api/fmc_config/{self.api_version}/domain/{self.domain_uuid}'
@@ -50,7 +53,9 @@ class Client(APIPlugin):
             self.token = response.headers.get('X-auth-access-token')
             self.token_refresh = response.headers.get('X-auth-refresh-token')
             self.token_refresh_count += 1
-            self.token_expire = datetime.now() + timedelta(minutes=30)
+            if self.token_expiration_period > 30 or self.token_expiration_period < 1:
+                self.token_expiration_period = 30
+            self.token_expire = datetime.now() + timedelta(minutes=self.token_expiration_period)
             self.headers.update({'X-auth-access-token': self.token})
 
         return response
